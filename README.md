@@ -7,4 +7,5 @@ A treasure map script for FiveM
 2. Drag treasuremap.png into your inventory images location
 3. Configure the config to your liking
 
-![image](https://github.com/LucidScripts/lucid-treasure/assets/162527264/96737a95-341e-4fd9-af50-1c73c36e7c34)
+
+![Untitled](https://github.com/LucidScripts/lucid-treasure/assets/162527264/5a973b04-8bb3-49ff-a0f9-1c1f0b999028)
