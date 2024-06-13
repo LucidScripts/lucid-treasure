@@ -1,3 +1,4 @@
+local openChest = {}
 
 RegisterNetEvent("lucid-treasure:DisplayTreasureUI")
 AddEventHandler("lucid-treasure:DisplayTreasureUI", function(treasure, index)
@@ -9,15 +10,12 @@ AddEventHandler("lucid-treasure:DisplayTreasureUI", function(treasure, index)
     SetNuiFocus(true, true)
 end)
 
-
 RegisterNetEvent("lucid-treasure:dig")
 AddEventHandler("lucid-treasure:dig", function(data)
     PlayDiggingAnimation(data.data)
 end)
 
-
 RegisterNUICallback('lucid-treasure:close', function(data, cb)
-    print(" data is " .. json.encode(data))
     SetNuiFocus(false, false)
 
     local location = vec3(data.location.x, data.location.y, data.location.z - 1)
@@ -42,10 +40,8 @@ RegisterNUICallback('lucid-treasure:close', function(data, cb)
         distance = 2.5,
     })
 
-    
     cb('ok')
 end)
-
 
 function PlayDiggingAnimation(data)
     exports['qb-target']:RemoveZone("lucid-treasure" .. data.index)
@@ -80,16 +76,18 @@ end
 RegisterNetEvent("lucid-treasure:spawnTreasureChest")
 AddEventHandler("lucid-treasure:spawnTreasureChest", function(data)
     local chestProp = `prop_drop_crate_01`
-    
+
     RequestModel(chestProp)
     while not HasModelLoaded(chestProp) do
         Wait(100)
     end
-    
+
     local chest = CreateObject(chestProp, data.location.x, data.location.y, data.location.z - .7, true, true, true)
     SetEntityHeading(chest, data.location.w)
     PlaceObjectOnGroundProperly(chest)
-    
+
+    openChest[data.index] = false
+
     exports['qb-target']:AddTargetEntity(chest, {
         options = {
             {
@@ -98,7 +96,10 @@ AddEventHandler("lucid-treasure:spawnTreasureChest", function(data)
                 icon = 'fas fa-box-open',
                 label = 'Open Treasure Chest',
                 index = data.index,
-                chest = chest
+                chest = chest,
+                canInteract = function()
+                    return not openChest[data.index]
+                end
             }
         },
         distance = 2.5
@@ -110,21 +111,21 @@ AddEventHandler("lucid-treasure:openTreasureChest", function(data)
     local ped = PlayerPedId()
     local animDict = "anim@amb@business@weed@weed_inspecting_lo_med_hi@"
     local animName = "weed_crouch_checkingleaves_idle_01_inspector"
-    
+
     RequestAnimDict(animDict)
     while not HasAnimDictLoaded(animDict) do
         Wait(100)
     end
-    
+
+    openChest[data.index] = true
+
     TaskPlayAnim(ped, animDict, animName, 8.0, 8.0, -1, 1, 0, false, false, false)
-    
+
     Citizen.Wait(Config.OpenChestTime)
-    
-    exports['qb-target']:RemoveTargetEntity(data.chest, "lucid-treasure:openTreasureChest")
-    
+
     DeleteObject(data.chest)
-    
+
     ClearPedTasks(ped)
-    
+
     TriggerServerEvent('lucid-treasure:server:TreasureCollected', data.index)
 end)
